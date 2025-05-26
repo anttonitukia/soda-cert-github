@@ -1,0 +1,47 @@
+name: Soda Scan
+
+on:
+  pull_request:  
+
+jobs:
+  soda_scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Perform Soda Scan
+        uses: sodadata/soda-github-action@v1.0.2
+        continue-on-error: true 
+        env:
+          SODA_API_KEY_ID: ${{ secrets.SODA_API_KEY_ID }}
+          SODA_API_KEY_SECRET: ${{ secrets.SODA_API_KEY_SECRET }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        with:
+          soda_library_version: v1.0.4
+          data_source: sodaiokalle
+          configuration: soda/configuration.yml
+          checks: soda/checks.yml
+
+      - name: Convert scan results to markdown table
+        uses: buildingcash/json-to-markdown-table-action@ce128b72e0c93612c8f02b85e0672bcb16fd9bf9
+        id: format
+        with:
+          json: ${{ env.SCAN_RESULTS }}
+
+      - name: Comment on pull request with scan results
+        uses: thollander/actions-comment-pull-request@v1
+        with:
+          message: |
+            🔎 **Soda scan completed**:
+
+            ${{ steps.format.outputs.markdown-table }}
+
+            [View full scan results in Soda Cloud](${{ env.SCAN_CLOUD_LINK }})
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
