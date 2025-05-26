@@ -24,7 +24,7 @@ jobs:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         with:
           soda_library_version: v1.0.4
-          data_source: sodaiokalle
+          data_source: anttonicert
           configuration: soda/configuration.yml
           checks: soda/checks.yml
 
